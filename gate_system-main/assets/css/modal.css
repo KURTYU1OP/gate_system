@@ -1,0 +1,132 @@
+body {
+    background:
+        linear-gradient(rgba(166, 2, 18, 0.35), rgba(166, 2, 18, 0.55)),
+        url("../../assets/images/Bulsu Pimental.png") no-repeat center center/cover;
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    overflow-x: hidden;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    font-family: "Poppins", sans-serif;
+    min-height: 100vh;
+}
+
+.particle {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    animation: floatParticles 12s linear infinite;
+    z-index: -2;
+    filter: blur(1px);
+}
+
+@keyframes floatParticles {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-150vh) scale(1.6);
+        opacity: 0;
+    }
+}
+
+.form_container {
+    background: #fff;
+    padding: 25px;
+    width: 400px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.25s ease;
+    margin: auto;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.back_btn {
+    color: #a60212;
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.back_btn:hover {
+    text-decoration: underline;
+}
+
+.form_container h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #a60212;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 5px;
+    margin-bottom: -5px;
+}
+
+input,
+select {
+    padding: 10px;
+    border: 2px solid #d3d3d3;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+input:focus,
+select:focus {
+    border-color: #a60212;
+    box-shadow: 0 0 0 3px rgba(166, 2, 18, 0.1);
+    outline: none;
+}
+
+button {
+    padding: 10px;
+    background: #a60212;
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: 0.25s;
+}
+
+button:hover {
+    background: #8a010f;
+    transform: translateY(-1px);
+}

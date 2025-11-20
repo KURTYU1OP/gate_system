@@ -1,0 +1,9 @@
+{
+    "rules": {
+        "film": {
+            ".indexOn": ["title],
+            " .read": true,
+            ".write": true
+        }
+    }
+}

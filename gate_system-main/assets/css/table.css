@@ -1,0 +1,87 @@
+/* Staff Table Container */
+.staff_table_container {
+    background: #fff;
+    padding: 25px;
+    margin: 30px auto 0;
+    border-radius: 15px;
+    max-width: 1200px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.staff_table_container h1 {
+    margin-bottom: 15px;
+    font-size: 24px;
+    color: #333;
+}
+
+.staff_table_container hr {
+    margin-bottom: 20px;
+    border: none;
+    border-bottom: 2px solid #eee;
+}
+
+/* Table */
+table.staff_list_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    table-layout: fixed;
+}
+
+table.staff_list_table th,
+table.staff_list_table td {
+    padding: 14px 20px;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+/* Header */
+table.staff_list_table th {
+    background-color: #a60212;
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Rows */
+table.staff_list_table tr {
+    transition: all 0.3s ease;
+}
+
+table.staff_list_table tr:nth-child(even) {
+    background-color: #fdf2f2;
+}
+
+table.staff_list_table tr:hover {
+    background-color: #ffe5e5;
+    transform: scale(1.01);
+}
+
+/* Action Buttons */
+table.staff_list_table td a {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-decoration: none;
+    color: #a60212;
+    font-weight: 500;
+    background: #ffe5e5;
+    transition: all 0.2s ease;
+}
+
+table.staff_list_table td a:hover {
+    background: #a60212;
+    color: #fff;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+
+    table.staff_list_table th,
+    table.staff_list_table td {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+}
