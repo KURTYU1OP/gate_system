@@ -59,46 +59,77 @@ if ($schedules) {
     }
 }
 
-if (empty($validSchedules)) {
-    echo json_encode([
-        'success' => false, 
-        'message' => "No schedules found for section: $studentSection"
-    ]);
-    exit;
+// --- VISITOR OVERRIDE ---
+$dateKey = date('Y-m-d');
+$visitorKey = $studentId . '-' . $dateKey;
+
+$visitorRaw = $db->retrieve("Student_Visitor/$visitorKey");
+$visitorRecord = json_decode($visitorRaw, true);
+
+$hasVisitor = false;
+$visitorPurpose = '';
+$visitorDate = '';
+
+if (is_array($visitorRecord) && isset($visitorRecord['student_id'])) {
+    if (strtolower(trim($visitorRecord['student_id'])) === strtolower(trim($studentId))) {
+        $hasVisitor = true;
+        $visitorPurpose = $visitorRecord['purpose'] ?? '';
+        $visitorDate = $visitorRecord['date'] ?? $dateKey;
+    }
 }
 
-// --- CURRENT TIME VALIDATION ---
+// --- CURRENT TIME + DAY VALIDATION ---
 $currentTime = date('H:i');
+$currentDay  = date('l'); // e.g. "Monday"
 $now = DateTime::createFromFormat('H:i', $currentTime);
 
 $allowed = false;
 $allowedWindow = [];
-foreach ($validSchedules as $sched) {
-    $timeFrom = DateTime::createFromFormat('H:i', $sched['time_from']);
-    $timeTo   = DateTime::createFromFormat('H:i', $sched['time_to']);
-    $allowedStart = (clone $timeFrom)->modify('-1 hour');
-    $allowedEnd   = (clone $timeTo)->modify('+1 hour');
 
+if ($hasVisitor) {
+    $allowed = true;
     $allowedWindow[] = [
-        'subject' => $sched['subject'],
-        'allowed_from' => $allowedStart->format('H:i'),
-        'allowed_to'   => $allowedEnd->format('H:i')
+        'subject' => 'Visitor',
+        'day' => $visitorDate,
+        'allowed_from' => '00:00',
+        'allowed_to'   => '23:59'
     ];
+} elseif (!empty($validSchedules)) {
+    foreach ($validSchedules as $sched) {
+        $schedDay = $sched['day'] ?? '';
+        if (strcasecmp($schedDay, $currentDay) !== 0) {
+            // Skip schedules that are not for today
+            continue;
+        }
 
-    if ($now >= $allowedStart && $now <= $allowedEnd) {
-        $allowed = true;
-        break;
+        $timeFrom = DateTime::createFromFormat('H:i', $sched['time_from']);
+        $timeTo   = DateTime::createFromFormat('H:i', $sched['time_to']);
+        $allowedStart = (clone $timeFrom)->modify('-1 hour');
+        $allowedEnd   = (clone $timeTo)->modify('+1 hour');
+
+        $allowedWindow[] = [
+            'subject' => $sched['subject'],
+            'day' => $schedDay,
+            'allowed_from' => $allowedStart->format('H:i'),
+            'allowed_to'   => $allowedEnd->format('H:i')
+        ];
+
+        if ($now >= $allowedStart && $now <= $allowedEnd) {
+            $allowed = true;
+            break;
+        }
     }
 }
 
 if (!$allowed) {
     echo json_encode([
         'success' => false,
-        'message' => 'Entry not allowed. You can only enter 1 hour before and 1 hour after your scheduled classes.',
+        'message' => 'Entry not allowed. You can only enter on the correct day and 1 hour before/after your scheduled classes, or if you have a visitor record.',
         'allowed_windows' => $allowedWindow,
         'schedules' => array_map(function($s) {
             return [
                 'subject' => $s['subject'],
+                'day' => $s['day'] ?? '',
                 'time_from' => $s['time_from'],
                 'time_to' => $s['time_to']
             ];
@@ -108,7 +139,6 @@ if (!$allowed) {
 }
 
 // --- ENTRY LOGGING LOGIC ---
-$dateKey = date('Y-m-d');
 $timeNow = date('H:i:s');
 $baseKey = $studentId . '-' . $dateKey;
 
@@ -127,7 +157,8 @@ if ($openKey) {
     $updateData = [
         "time_out"   => $timeNow,
         "guard_out"  => $guardName,
-        "gate_out"   => $guardGate
+        "gate_out"   => $guardGate,
+        "is_visitor" => $hasVisitor ? true : false
     ];
     $db->update("Entry_log/Student", $openKey, $updateData);
 
@@ -138,15 +169,20 @@ if ($openKey) {
         'full_name'  => ($studentData['firstname'] ?? '') . ' ' . ($studentData['lastname'] ?? ''),
         'course'     => $studentData['course'] ?? '',
         'section'    => $studentData['section'] ?? '',
+        'campus'     => $entries[$openKey]['campus'] ?? '', 
         'time'       => $timeNow,
         'violation'  => $violation,
         'guard_in'   => $entries[$openKey]['guard_in'] ?? '',
         'gate_in'    => $entries[$openKey]['gate_in'] ?? '',
         'guard_out'  => $guardName,
         'gate_out'   => $guardGate,
+        'is_visitor' => $hasVisitor ? true : false,
+        'visitor_purpose' => $visitorPurpose,
+        'visitor_date' => $visitorDate,
         'schedules'  => array_map(function($s) {
             return [
                 'subject' => $s['subject'],
+                'day' => $s['day'] ?? '',
                 'time_from' => $s['time_from'],
                 'time_to' => $s['time_to']
             ];
@@ -171,7 +207,10 @@ if ($openKey) {
         "section"     => $studentData['section'] ?? '',
         "guard_in"    => $guardName,
         "gate_in"     => $guardGate,
-        "campus"      => $guardCampus
+        "campus"      => $guardCampus,
+        "is_visitor"  => $hasVisitor ? true : false,
+        "visitor_purpose" => $visitorPurpose,
+        "visitor_date" => $visitorDate
     ];
 
     $db->update("Entry_log/Student", $entryKey, $data);
@@ -188,6 +227,9 @@ if ($openKey) {
         'guard_in'   => $guardName,
         'gate_in'    => $guardGate,
         'campus'     => $guardCampus,
+        'is_visitor' => $hasVisitor ? true : false,
+        'visitor_purpose' => $visitorPurpose,
+        'visitor_date' => $visitorDate,
         'schedules'  => array_map(function($s) {
             return [
                 'subject' => $s['subject'],
